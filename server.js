@@ -1,12 +1,13 @@
 'use strict';
 require('dotenv').config();
 const express = require('express');
+const app = express();
 const myDB = require('./connection');
 const fccTesting = require('./freeCodeCamp/fcctesting.js');
 const session = require('express-session')
 const passport = require('passport');
 const { ObjectID } = require('mongodb');
-const app = express();
+const LocalStrategy = require('passport-local');
 
 fccTesting(app); //For FCC testing purposes
 app.use('/public', express.static(process.cwd() + '/public'));
@@ -34,6 +35,16 @@ myDB(async client => {
       message: 'Please login'
     });
   });
+
+  passport.use(new LocalStrategy((username, password, done) => {
+    myDataBase.findOne({ username: username }, (err, user) => {
+      console.log(`User ${username} attempted to log in.`);
+      if (err) return done(err);
+      if (!user) return done(null, false);
+      if (password !== user.password) return done(null, false);
+      return done(null, user);
+    });
+  }));
 
   // Serialization and deserialization here...
   passport.serializeUser((user, done) => {
