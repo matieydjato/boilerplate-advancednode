@@ -2,15 +2,21 @@ const passport = require('passport');
 const bcrypt = require('bcrypt');
 
 module.exports = function (app, myDataBase) {
-    app.route('/').get((_req, res) => {
+  app.route('/').get((_req, res) => {
     // Change the response to render the Pug template
     res.render('index', {
       title: 'Connected to Database',
       message: 'Please login',
       showLogin: true,
-      showRegistration: true
+      showRegistration: true,
+      showSocialAuth: true
     });
   });
+
+  app.route('/auth/github').get(passport.authenticate('github'));
+  app.route('/auth/github/callback').get(passport.authenticate('github', { failureRedirect: '/' }), (req, res) => {
+    res.redirect('/profile');
+  })
 
   app.route('/login').post(passport.authenticate('local', { failureRedirect: '/' }), (req, res) => {
     res.redirect('/profile');
